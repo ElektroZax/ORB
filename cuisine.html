@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuisine Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="nav">
+    <h2>CUISINE DETAILS</h2>
+    <select onchange="navigate(this.value)">
+        <option value="">Menu</option>
+        <option value="home.html">Home</option>
+        <option value="saved.html">Saved Recipes</option>
+    </select>
+    <div class="nav-right">
+        <img id="header-profile-pic" src="" alt="Profile" onclick="location.href='profile.html'">
+    </div>
+</div>
+
+<script>
+    // Update header profile pic on page load
+    function updateHeaderProfilePic() {
+        const currentUser = localStorage.getItem("currentUser");
+        if (currentUser) {
+            const profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+            const profilePic = profiles[currentUser]?.profilePic || "default1.png";
+            document.getElementById("header-profile-pic").src = profilePic;
+        }
+    }
+    window.onload = updateHeaderProfilePic;
+</script>
+<script src="data.js"></script>
+
+<div class="container">
+    <h2 id="cuisine-name"></h2>
+    <img id="cuisine-img" src="" alt="Cuisine Image">
+    <p id="cuisine-desc"></p>
+    
+    <h3>Popular Dishes</h3>
+    <div id="dishes-list"></div>
+</div>
+
+<script>
+    function navigate(page) {
+        if (page) location.href = page;
+    }
+
+    const cuisines = {
+        italian: {
+            name: "Italian",
+            img: "italian.png",
+            desc: "Italian cuisine is known for its regional diversity and abundance of flavors.",
+            dishes: [
+                { name: "Pasta", img: "pasta.png", link: "recipe.html?recipe=pasta" },
+                { name: "Pizza", img: "pizza.png", link: "recipe.html?recipe=pizza" }
+            ]
+        },
+        american: {
+            name: "American",
+            img: "american.png",
+            desc: "American cuisine is a blend of various cultural influences, known for its hearty meals.",
+            dishes: [
+                { name: "Burger", img: "burger.png", link: "recipe.html?recipe=burger" },
+                { name: "Caesar Salad", img: "salad.png", link: "recipe.html?recipe=salad" },
+                { name: "Pancakes", img: "pancakes.png", link: "recipe.html?recipe=pancakes" }
+            ]
+        },
+        japanese: {
+            name: "Japanese",
+            img: "japanese.png",
+            desc: "Japanese cuisine emphasizes fresh ingredients and umami flavors.",
+            dishes: [
+                { name: "Sushi", img: "sushi.png", link: "recipe.html?recipe=sushi" },
+                { name: "Ramen", img: "ramen.png", link: "recipe.html?recipe=ramen" }
+            ]
+        },
+        mexican: {
+            name: "Mexican",
+            img: "mexican.png",
+            desc: "Mexican cuisine is rich in spices and known for its vibrant flavors.",
+            dishes: [
+                { name: "Tacos", img: "tacos.png", link: "recipe.html?recipe=tacos" }
+            ]
+        }
+    };
+
+    function loadCuisine() {
+        const params = new URLSearchParams(window.location.search);
+        const cuisineKey = params.get("cuisine");
+
+        if (cuisines[cuisineKey]) {
+            document.getElementById("cuisine-name").innerText = cuisines[cuisineKey].name;
+            document.getElementById("cuisine-img").src = cuisines[cuisineKey].img;
+            document.getElementById("cuisine-desc").innerText = cuisines[cuisineKey].desc;
+
+            let dishesList = document.getElementById("dishes-list");
+            dishesList.innerHTML = "";
+            cuisines[cuisineKey].dishes.forEach(dish => {
+                let dishDiv = document.createElement("div");
+                dishDiv.classList.add("dish-item");
+
+                let dishLink = document.createElement("a");
+                dishLink.href = dish.link;
+
+                let dishImg = document.createElement("img");
+                dishImg.src = dish.img;
+                dishImg.alt = dish.name;
+
+                let dishName = document.createElement("h4");
+                dishName.innerText = dish.name;
+
+                dishLink.appendChild(dishImg);
+                dishDiv.appendChild(dishLink);
+                dishDiv.appendChild(dishName);
+                dishesList.appendChild(dishDiv);
+            });
+        } else {
+            document.querySelector(".container").innerHTML = "<h2>Cuisine Not Found</h2>";
+        }
+    }
+
+    window.onload = loadCuisine;
+</script>
+
+</body>
+</html>

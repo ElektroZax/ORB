@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Recipe Book</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="nav">
+        <div class="nav-left">
+            <h2>ORB</h2>
+            <select onchange="navigate(this.value)">
+                <option value="">Menu</option>
+                <option value="home.html">Home</option>
+                <option value="saved.html">Saved Recipes</option>
+                <option value="profile.html">Profile</option>
+            </select>
+            <p class="nav-text">Your Online Recipe Book</p>
+        </div>
+        <div class="nav-right">
+            <img class="header-profile-pic" src="default-profile.png" alt="Profile" onclick="location.href='profile.html'">
+        </div>
+    </div>
+    
+    <script>
+        // Update header profile pic on page load
+        function updateHeaderProfilePic() {
+            const currentUser = localStorage.getItem("currentUser");
+            if (currentUser) {
+                const profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+                const profilePic = profiles[currentUser]?.profilePic || "default1.png";
+                document.getElementById("header-profile-pic").src = profilePic;
+            }
+        }
+        window.onload = updateHeaderProfilePic;
+    </script>
+    <script src="data.js"></script>
+    <input type="text" id="search" placeholder="Search recipes or cuisines..." oninput="filterRecipes()">
+    
+    <h2 class="explore-title" onclick="location.href='explore.html'">EXPLORE</h2>
+
+    <div class="explore-container">
+        <div class="explore-scroll" id="recipe-list">
+            <div class="recipe" onclick="location.href='recipe.html?recipe=burger'">
+                <img src="burger.png" alt="Burger">
+                <h3>Burger</h3>
+            </div>
+            <div class="recipe" onclick="location.href='recipe.html?recipe=salad'">
+                <img src="salad.png" alt="Salad">
+                <h3>Salad</h3>
+            </div>
+            <div class="recipe" onclick="location.href='recipe.html?recipe=sushi'">
+                <img src="sushi.png" alt="Sushi">
+                <h3>Sushi</h3>
+            </div>
+            <div class="recipe" onclick="location.href='recipe.html?recipe=cake'">
+                <img src="cake.png" alt="Cake">
+                <h3>Cake</h3>
+            </div>
+            <div class="recipe" onclick="location.href='recipe.html?recipe=pasta'">
+                <img src="pasta.png" alt="Pasta">
+                <h3>Pasta</h3>
+            </div>
+            <div class="recipe" onclick="location.href='recipe.html?recipe=pizza'">
+                <img src="pizza.png" alt="Pizza">
+                <h3>Pizza</h3>
+            </div>
+            <div class="recipe" onclick="location.href='recipe.html?recipe=tacos'">
+                <img src="tacos.png" alt="Tacos">
+                <h3>Tacos</h3>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="cuisine-title">CUISINES</h3>
+
+    <div class="cuisine-container">
+        <div class="cuisine-scroll" id="cuisine-list">
+            <div class="cuisine" onclick="location.href='cuisine.html?cuisine=italian'">
+                <img src="italian.png" alt="Italian">
+                <h4>Italian</h4>
+            </div>
+            <div class="cuisine" onclick="location.href='cuisine.html?cuisine=asian'">
+                <img src="asian.png" alt="Asian">
+                <h4>Asian</h4>
+            </div>
+            <div class="cuisine" onclick="location.href='cuisine.html?cuisine=american'">
+                <img src="american.png" alt="American">
+                <h4>American</h4>
+            </div>
+            <div class="cuisine" onclick="location.href='cuisine.html?cuisine=mexican'">
+                <img src="mexican.png" alt="Mexican">
+                <h4>Mexican</h4>
+            </div>
+            <div class="cuisine" onclick="location.href='cuisine.html?cuisine=indian'">
+                <img src="indian.png" alt="Indian">
+                <h4>Indian</h4>
+            </div>
+        </div>
+    </div>
+    <div class="saved-recipes">
+        <h5>Saved Recipes</h5>
+        <div id="saved-recipes-row" class="saved-recipes-gallery"></div>
+    </div>
+
+    <script>
+        function updateSavedRecipesRow() {
+            let savedRecipes = JSON.parse(localStorage.getItem("savedRecipes")) || [];
+            let savedRow = document.getElementById("saved-recipes-row");
+            savedRow.innerHTML = "";
+    
+            if (savedRecipes.length === 0) {
+                savedRow.innerHTML = "<p style='grid-column:1/-1'>No saved recipes yet.</p>";
+                return;
+            }
+    
+            savedRecipes.forEach(key => {
+                if (recipes[key]) {
+                    let recipeCard = document.createElement("div");
+                    recipeCard.className = "saved-recipe-card";
+                    recipeCard.innerHTML = `
+                        <a href="recipe.html?recipe=${key}">
+                            <img src="${recipes[key].img}" alt="${recipes[key].name}">
+                            <p>${recipes[key].name}</p>
+                        </a>
+                    `;
+                    savedRow.appendChild(recipeCard);
+                }
+            });
+        }
+    
+        window.onload = updateSavedRecipesRow;
+    </script>
+
+    <script>
+        function navigate(page) {
+            if (page) location.href = page;
+        }
+
+        function filterRecipes() {
+            let input = document.getElementById("search").value.toLowerCase();
+            let recipes = document.querySelectorAll("#recipe-list .recipe");
+            let cuisines = document.querySelectorAll("#cuisine-list .cuisine");
+
+            recipes.forEach(recipe => {
+                let name = recipe.querySelector("h3").innerText.toLowerCase();
+                recipe.style.display = name.includes(input) ? "block" : "none";
+            });
+
+            cuisines.forEach(cuisine => {
+                let name = cuisine.querySelector("h4").innerText.toLowerCase();
+                cuisine.style.display = name.includes(input) ? "block" : "none";
+            });
+        }    
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ff8c00;
+            margin: 0 auto 10px;
+        }
+        
+        .stats-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: #fff8dc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+            color: #ff8c00;
+            font-size: 1.1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .saved-recipes-list {
+            margin-top: 30px;
+        }
+        
+        .recipe-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .recipe-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+        
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav">
+        <div class="nav-left">
+            <h2>PROFILE</h2>
+            <select onchange="navigate(this.value)">
+                <option value="">Menu</option>
+                <option value="home.html">Home</option>
+                <option value="saved.html">Saved Recipes</option>
+            </select>
+        </div>
+        <div class="nav-right">
+            <img class="header-profile-pic" src="default-profile.png" alt="Profile" onclick="location.href='profile.html'">
+        </div>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <img class="profile-icon" src="default-profile.png" alt="Profile" id="profile-pic">
+            <h2 id="profile-username"></h2>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Saved Recipes</h3>
+                    <div class="stat-value" id="saved-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Unsaved Recipes</h3>
+                    <div class="stat-value" id="unsaved-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Uploaded Recipes</h3>
+                    <div class="stat-value" id="uploaded-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Interactions</h3>
+                    <div class="stat-value" id="total-interactions">0</div>
+                </div>
+            </div>
+            
+            <div class="saved-recipes-list">
+                <h3>Your Saved Recipes</h3>
+                <div id="saved-recipes-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        function navigate(page) {
+            if (page) location.href = page;
+        }
+        
+        function loadProfile() {
+            const currentUser = localStorage.getItem("currentUser");
+            const profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+            const profile = profiles[currentUser] || {};
+            
+            // Update profile info
+            document.getElementById("profile-username").textContent = currentUser;
+            document.getElementById("profile-pic").src = profile.profilePic || "default-profile.png";
+            
+            // Update stats
+            const savedCount = profile.savedRecipes?.length || 0;
+            document.getElementById("saved-count").textContent = savedCount;
+            document.getElementById("uploaded-count").textContent = profile.uploadedRecipes?.length || 0;
+            
+            // Calculate unsaved count (example - you'll need to implement your own logic)
+            const unsavedCount = /* Your calculation here */ 0;
+            document.getElementById("unsaved-count").textContent = unsavedCount;
+            
+            // Calculate total interactions
+            document.getElementById("total-interactions").textContent = savedCount + unsavedCount;
+            
+            // Load saved recipes
+            loadSavedRecipes();
+        }
+        
+        function loadSavedRecipes() {
+            const currentUser = localStorage.getItem("currentUser");
+            const profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+            const profile = profiles[currentUser] || {};
+            const container = document.getElementById("saved-recipes-container");
+            container.innerHTML = "";
+            
+            if (!profile.savedRecipes || profile.savedRecipes.length === 0) {
+                container.innerHTML = "<p>You haven't saved any recipes yet.</p>";
+                return;
+            }
+            
+            profile.savedRecipes.forEach(recipeKey => {
+                if (window.recipes && window.recipes[recipeKey]) {
+                    const recipe = window.recipes[recipeKey];
+                    const recipeItem = document.createElement("div");
+                    recipeItem.className = "recipe-item";
+                    recipeItem.innerHTML = `
+                        <img src="${recipe.img}" alt="${recipe.name}">
+                        <a href="recipe.html?recipe=${recipeKey}">${recipe.name}</a>
+                    `;
+                    container.appendChild(recipeItem);
+                }
+            });
+        }
+        
+        window.onload = loadProfile;
+    </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Details</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .nav {
+            background: #ff8c00;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .nav select {
+            padding: 5px;
+            border: none;
+        }
+        .content-container {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+        .recipe-meta {
+            width: 25%;
+        }
+        .recipe-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 60%;
+        }
+        .ingredients-box, .instructions-box {
+            background: #fff8dc;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+        .comments-section {
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+        }
+        .comments-box {
+            background: #add8e6;
+            padding: 15px;
+            border-radius: 10px;
+            flex-grow: 1;
+            margin-bottom: 10px;
+        }
+        .comment-bar {
+            background: #add8e6;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .small-btn {
+            background: #ff8c00;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .comment {
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+        #comment-input {
+            flex-grow: 1;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .meta-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .meta-box h4 {
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .user-chip {
+            display: inline-block;
+            background: #ff8c00;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin: 3px;
+            font-size: 0.9em;
+        }
+        @media (max-width: 768px) {
+            .content-container {
+                flex-direction: column;
+            }
+            .recipe-meta, .recipe-box, .comments-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <div class="nav-left">
+        <h2>RECIPE DETAILS</h2>
+        <select onchange="navigate(this.value)">
+            <option value="">Menu</option>
+            <option value="home.html">Home</option>
+            <option value="saved.html">Saved Recipes</option>
+        </select>
+    </div>
+    <div class="nav-right">
+        <img class="header-profile-pic" src="default-profile.png" alt="Profile" onclick="location.href='profile.html'">
+    </div>
+</div>
+
+<div class="content-container">
+    <div class="recipe-meta">
+        <div class="meta-box">
+            <h4>Uploaded By</h4>
+            <div id="uploaded-by">ORB</div>
+        </div>
+        <div class="meta-box">
+            <h4>Saved By (<span id="save-count">0</span>)</h4>
+            <div id="saved-by-list"></div>
+        </div>
+    </div>
+
+    <div class="recipe-box">
+        <h2 id="recipe-name"></h2>
+        <img id="recipe-img" src="" alt="Recipe Image" width="300">
+        <div class="ingredients-box">
+            <h3>Ingredients</h3>
+            <div id="ingredients-list"></div>
+        </div>
+        <div class="instructions-box">
+            <h3>Instructions</h3>
+            <div id="instructions-list"></div>
+        </div>
+        <button id="save-btn" class="small-btn">Save</button>
+        <div id="save-message" class="message"></div>
+    </div>
+
+    <div class="comments-section">
+        <div class="comments-box">
+            <h3>Comments</h3>
+            <div id="comments-list"></div>
+        </div>
+        <div class="comment-bar">
+            <input type="text" id="comment-input" placeholder="Add a comment">
+            <button class="small-btn" onclick="addComment()">Post</button>
+            <button class="small-btn" onclick="deleteOwnComments()">Delete Mine</button>
+        </div>
+    </div>
+</div>
+<script src="data.js"></script>
+<script>
+    // Shared recipes data
+    
+
+    // Get current recipe from URL
+    const params = new URLSearchParams(window.location.search);
+    const recipeKey = params.get("recipe");
+    const recipe = recipes[recipeKey];
+    
+    // Initialize storage systems
+    if (!localStorage.getItem("recipeSaves")) {
+        localStorage.setItem("recipeSaves", JSON.stringify({}));
+    }
+    const recipeSaves = JSON.parse(localStorage.getItem("recipeSaves"));
+
+    if (!localStorage.getItem("userProfiles")) {
+        localStorage.setItem("userProfiles", JSON.stringify({}));
+    }
+
+    function navigate(page) {
+        if (page) location.href = page;
+    }
+
+    function updateSaveInfo() {
+        const saves = recipeSaves[recipeKey] || [];
+        document.getElementById("save-count").textContent = saves.length;
+        
+        const savedByList = document.getElementById("saved-by-list");
+        savedByList.innerHTML = saves.length 
+            ? saves.map(user => `<span class="user-chip">${user}</span>`).join("")
+            : "No saves yet";
+    }
+
+    function updateSaveButton() {
+        const currentUser = localStorage.getItem("currentUser");
+        if (!currentUser) {
+            document.getElementById("save-btn").style.display = "none";
+            return;
+        }
+
+        const savedRecipes = JSON.parse(localStorage.getItem("savedRecipes")) || [];
+        const saveBtn = document.getElementById("save-btn");
+        
+        if (savedRecipes.includes(recipeKey)) {
+            saveBtn.textContent = "Unsave";
+            saveBtn.onclick = unsaveRecipe;
+        } else {
+            saveBtn.textContent = "Save";
+            saveBtn.onclick = saveRecipe;
+        }
+        saveBtn.style.display = "block";
+    }
+
+    function saveRecipe() {
+        const currentUser = localStorage.getItem("currentUser");
+        if (!currentUser) {
+            alert("Please login to save recipes!");
+            return;
+        }
+
+        // Update global recipe saves
+        if (!recipeSaves[recipeKey]) {
+            recipeSaves[recipeKey] = [];
+        }
+        if (!recipeSaves[recipeKey].includes(currentUser)) {
+            recipeSaves[recipeKey].push(currentUser);
+            localStorage.setItem("recipeSaves", JSON.stringify(recipeSaves));
+        }
+        
+        // Update user's saved recipes
+        let profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+        if (!profiles[currentUser]) {
+            profiles[currentUser] = {
+                username: currentUser,
+                savedRecipes: [],
+                uploadedRecipes: [],
+                profilePic: "default-profile.png"
+            };
+        }
+        if (!profiles[currentUser].savedRecipes.includes(recipeKey)) {
+            profiles[currentUser].savedRecipes.push(recipeKey);
+            localStorage.setItem("userProfiles", JSON.stringify(profiles));
+        }
+        
+        // Update global saved recipes
+        let savedRecipes = JSON.parse(localStorage.getItem("savedRecipes")) || [];
+        if (!savedRecipes.includes(recipeKey)) {
+            savedRecipes.push(recipeKey);
+            localStorage.setItem("savedRecipes", JSON.stringify(savedRecipes));
+        }
+        
+        updateSaveInfo();
+        updateSaveButton();
+        document.getElementById("save-message").textContent = "✅ Recipe saved by " + currentUser;
+    }
+
+    function unsaveRecipe() {
+        const currentUser = localStorage.getItem("currentUser");
+        if (!currentUser) return;
+        
+        // Update global recipe saves
+        if (recipeSaves[recipeKey]) {
+            recipeSaves[recipeKey] = recipeSaves[recipeKey].filter(user => user !== currentUser);
+            localStorage.setItem("recipeSaves", JSON.stringify(recipeSaves));
+        }
+        
+        // Update user's saved recipes
+        let profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+        if (profiles[currentUser]) {
+            profiles[currentUser].savedRecipes = profiles[currentUser].savedRecipes.filter(r => r !== recipeKey);
+            localStorage.setItem("userProfiles", JSON.stringify(profiles));
+        }
+        
+        // Update global saved recipes
+        let savedRecipes = JSON.parse(localStorage.getItem("savedRecipes")) || [];
+        savedRecipes = savedRecipes.filter(item => item !== recipeKey);
+        localStorage.setItem("savedRecipes", JSON.stringify(savedRecipes));
+        
+        updateSaveInfo();
+        updateSaveButton();
+        document.getElementById("save-message").textContent = "❌ Recipe unsaved by " + currentUser;
+    }
+
+    function addComment() {
+        const commentInput = document.getElementById("comment-input").value.trim();
+        if (!commentInput) return;
+        
+        const comments = JSON.parse(localStorage.getItem(`comments-${recipeKey}`)) || [];
+        const username = localStorage.getItem("currentUser") || "Guest";
+        const commentObj = { username, text: commentInput };
+        
+        comments.push(commentObj);
+        localStorage.setItem(`comments-${recipeKey}`, JSON.stringify(comments));
+        document.getElementById("comment-input").value = "";
+        displayComments();
+    }
+
+    function displayComments() {
+        const commentsList = document.getElementById("comments-list");
+        commentsList.innerHTML = "";
+        const comments = JSON.parse(localStorage.getItem(`comments-${recipeKey}`)) || [];
+        
+        comments.forEach(comment => {
+            const commentDiv = document.createElement("div");
+            commentDiv.className = "comment";
+            commentDiv.innerHTML = `<strong>${comment.username}:</strong> ${comment.text}`;
+            commentsList.appendChild(commentDiv);
+        });
+    }
+
+    function deleteOwnComments() {
+        const username = localStorage.getItem("currentUser") || "Guest";
+        let comments = JSON.parse(localStorage.getItem(`comments-${recipeKey}`)) || [];
+        comments = comments.filter(comment => comment.username !== username);
+        localStorage.setItem(`comments-${recipeKey}`, JSON.stringify(comments));
+        displayComments();
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+        if (recipe) {
+            document.getElementById("recipe-name").textContent = recipe.name;
+            document.getElementById("recipe-img").src = recipe.img;
+            document.getElementById("ingredients-list").innerHTML = recipe.ingredients.map(i => `<div>• ${i}</div>`).join("");
+            document.getElementById("instructions-list").innerHTML = recipe.instructions.split('\n').map(step => `<div>${step}</div>`).join("");
+            document.getElementById("uploaded-by").textContent = recipe.uploadedBy;
+        }
+
+        updateSaveInfo();
+        updateSaveButton();
+        displayComments();
+
+        // Update header profile pic
+        const currentUser = localStorage.getItem("currentUser");
+        if (currentUser) {
+            const profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+            const profilePic = profiles[currentUser]?.profilePic || "default-profile.png";
+            document.querySelector(".header-profile-pic").src = profilePic;
+        }
+    };
+</script>
+</body>
+</html>

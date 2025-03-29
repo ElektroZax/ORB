@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Recipe Book</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- index.html -->
+<div class="container">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="error-message" class="error"></p>
+</div>
+
+<script>
+    function login() {
+        let user = document.getElementById("username").value.trim();
+        let pass = document.getElementById("password").value;
+        let errorMsg = document.getElementById("error-message");
+
+        if (user && pass === "password") {
+            // Create basic profile if it doesn't exist
+            let profiles = JSON.parse(localStorage.getItem("userProfiles")) || {};
+            if (!profiles[user]) {
+                profiles[user] = {
+                    username: user,
+                    savedRecipes: [],
+                    uploadedRecipes: [],
+                    profilePic: "default-profile.png", // Fixed default picture
+                    allTimeSaves: 0,
+                    allTimeUnsaves: 0
+                };
+                localStorage.setItem("userProfiles", JSON.stringify(profiles));
+            }
+            localStorage.setItem("currentUser", user);
+            window.location.href = "home.html";
+        } else {
+            errorMsg.textContent = "Please enter username and password!";
+        }
+    }
+</script>
+<script src="script.js"></script>
+<script src="data.js"></script>
+</body>
+</html>
